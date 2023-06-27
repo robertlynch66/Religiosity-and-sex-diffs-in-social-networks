@@ -18,129 +18,130 @@ husbands_new$religious_knowledge_scale<- scales::rescale(husbands_new$religious_
 data1 <-  husbands_new %>% filter (Respondent_a=="Wife" | Respondent_a=="Husband")
 data2 <-  husbands_new %>% filter (Respondent_a=="Wife")
 data3 <-  husbands_new %>% filter (Respondent_a=="Husband")
+# 
+# d <- data1[c(2,28,6,8,9,52,51,54,25:27)] 
+# d <- d[complete.cases(d), ] 
 
-d <- data1[c(2,28,6,8,9,52,51,54,25:27)] 
-d <- d[complete.cases(d), ] 
-
-d<-d %>% mutate(rank=ntile(d$religious_knowledge_scale,6))
-library(ggthemes)
-
-## make the top plot
-Sex_seq <- rep(0:1, each=6)
-Religiosity_seq <- rep(1:6,2)
-
-
-#read in  the model
-
-M1 <- readRDS("C:/Users/robert/Dropbox/Github/Kin_networks_men/results/NW_total_lognormal_sex.rds")
-attach(d)
-newdata1 <- tidyr::crossing(
-  religion=mean(religion),
-  familyBariReligiousAfter = mean(familyBariReligiousAfter),
-  gender_F0_M1_a = c(0,1),
-  religious_knowledge_scale=c(-1.0,-0.9,-0.8,-0.7,-0.6,-0.5),
-  #religious_knowledge_scale=religious_knowledge_scale,
-  MI_geo_proximity=mean(MI_geo_proximity),
-  MI_economic_capital=mean(MI_economic_capital),
-  MI_human_capital=mean(MI_human_capital),
-  Kids_a=mean(Kids_a),
-  Mothers_kids_a=mean(Mothers_kids_a)) %>%
-  as.data.frame()
-detach(d)
-
-
-mu_summary <-
-  fitted(M1, 
-         newdata = newdata1, allow_new_levels=TRUE, probs=c(0.11,0.89)) %>%
-  as_tibble() %>%
-  # let's tack on the `religiosity` values from `religious_seq` if necessary (here it is not)
-  bind_cols(Religiosity_seq) %>% bind_cols(Sex_seq)
-# let's tack on the `religiosity` values from `religious_seq` if necessary (here it is not)
-mu_summary
-
-colnames(mu_summary) <- c('Estimate','Error','Q5','Q95','Religiosity','Sex')
-
-mu_summary
-
-
-Data1 <- d %>% left_join (mu_summary, by =c("rank"="Religiosity","gender_F0_M1_a"="Sex"))
-
-library(plotrix)
-library(magrittr)
-library(dplyr)
-library(ggplot2)
-library(ggstance)
-library(rstan)
-library(tidybayes)
-library(emmeans)
-library(broom)
-library(brms)
-library(modelr)
-library(forcats)
-library(ggdist)
-
-
-cols <- c("0" = "#000000", "1" = "#0072B2", "2" = "#000000", "3" = "#0072B2") #,
-
-show_col("#000000")
-show_col("#0072B2")
-# relabel sex from facet grid
-new <- c("Men", "Women")
-names(new) <- c(1,0)
-
-
-plot1<- ggplot(Data1, aes(x=rank, y=Estimate,group=factor(gender_F0_M1_a),
-                          fill=factor(gender_F0_M1_a),
-                     color=factor(gender_F0_M1_a))) +
-  
-    geom_ribbon(aes(ymin = Q5, ymax = Q95,alpha=0.7)) +
-  
-    geom_line() +
-  
-  geom_jitter(data=Data1,shape=1,size=0.9,width=0.6,aes(group=factor(gender_F0_M1_a),colour=factor(gender_F0_M1_a),
-                                                        x = rank, y = NW_total)) +
-  
-  facet_wrap(~gender_F0_M1_a, ncol = 2, labeller=labeller(gender_F0_M1_a=new))+
-  
-  
-  # scale_color_manual(name=NULL, breaks=c(0,1),values=cols,
-  #                    labels=c("Predicted (95% CI)","Observed")) +
-  
-  scale_color_manual(name = NULL,
-                     values = cols,
-                     breaks=c(1,0),
-                     labels = c("Predicted (95% CI)", "Observed"),
-                     guide = guide_legend(override.aes = list(linetype = c(1, 0),
-                                                              shape = c(NA, 1),
-                                                              color = "grey")))+
-  
-  scale_fill_manual(name="", breaks=c(0),values=cols,
-                      labels=c("Predicted (95% CI)")) +
-  scale_x_continuous(name="Religious Knowledge",limits=c(0.5,6.5),breaks=c(1.5,3.5,5.5),
-                     labels=c("","","")) +
-  scale_y_continuous(name="Total network size",breaks=c(7,8,9,10,11,12,13,14,15),limits=c(7,16),
-                     labels=c("7","8","9","10",'11','12','13','14','15')) +
-  
-  theme_bw() +
-  theme(plot.title = element_text(hjust = 0.5, size=16,face="bold"),
-        legend.title = element_text(size=12),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        legend.key.size = unit(0.15, "in"),
-        legend.text = element_text(size = 12, face = "bold"),
-          strip.text.x = element_text(
-            size = 12, color = "black", face = "bold"),
-          strip.text.y = element_text(
-            size = 12, color = "black", face = "bold"),
-        
-        axis.text.x = element_text(colour="grey20",size=10,angle=0,face="bold"),
-        axis.text.y = element_text(colour="grey20",size=10,angle=0,hjust=0,vjust=0,face="bold"),  
-        axis.title.x = element_text(colour="black",size=12,angle=0,hjust=.5,vjust=0,face="bold"),
-        axis.title.y = element_text(colour="black",size=12,angle=90,hjust=.5,vjust=.5,face="bold"))+
- 
-  guides(alpha="none")+
-  guides(fill="none")
-plot1
+# d<-d %>% mutate(rank=ntile(d$religious_knowledge_scale,6))
+# library(ggthemes)
+# 
+# ## make the top plot
+# Sex_seq <- rep(0:1, each=6)
+# Religiosity_seq <- rep(1:6,2)
+# 
+# 
+# #read in  the model
+# M1 <- readRDS("C:/Users/robert/Dropbox/Github/Religiosity_sex_diffs_and_social_networks/Results/model_intx_both_sexes/NW_total_lognormal_sex.rds")
+# 
+# 
+# attach(d)
+# newdata1 <- tidyr::crossing(
+#   religion=mean(religion),
+#   familyBariReligiousAfter = mean(familyBariReligiousAfter),
+#   gender_F0_M1_a = c(0,1),
+#   religious_knowledge_scale=c(-1.0,-0.9,-0.8,-0.7,-0.6,-0.5),
+#   #religious_knowledge_scale=religious_knowledge_scale,
+#   MI_geo_proximity=mean(MI_geo_proximity),
+#   MI_economic_capital=mean(MI_economic_capital),
+#   MI_human_capital=mean(MI_human_capital),
+#   Kids_a=mean(Kids_a),
+#   Mothers_kids_a=mean(Mothers_kids_a)) %>%
+#   as.data.frame()
+# detach(d)
+# 
+# 
+# mu_summary <-
+#   fitted(M1, 
+#          newdata = newdata1, allow_new_levels=TRUE, probs=c(0.11,0.89)) %>%
+#   as_tibble() %>%
+#   # let's tack on the `religiosity` values from `religious_seq` if necessary (here it is not)
+#   bind_cols(Religiosity_seq) %>% bind_cols(Sex_seq)
+# # let's tack on the `religiosity` values from `religious_seq` if necessary (here it is not)
+# mu_summary
+# 
+# colnames(mu_summary) <- c('Estimate','Error','Q5','Q95','Religiosity','Sex')
+# 
+# mu_summary
+# 
+# 
+# Data1 <- d %>% left_join (mu_summary, by =c("rank"="Religiosity","gender_F0_M1_a"="Sex"))
+# 
+# library(plotrix)
+# library(magrittr)
+# library(dplyr)
+# library(ggplot2)
+# library(ggstance)
+# library(rstan)
+# library(tidybayes)
+# library(emmeans)
+# library(broom)
+# library(brms)
+# library(modelr)
+# library(forcats)
+# library(ggdist)
+# 
+# 
+# cols <- c("0" = "#000000", "1" = "#0072B2", "2" = "#000000", "3" = "#0072B2") #,
+# 
+# show_col("#000000")
+# show_col("#0072B2")
+# # relabel sex from facet grid
+# new <- c("Men", "Women")
+# names(new) <- c(1,0)
+# 
+# 
+# plot1<- ggplot(Data1, aes(x=rank, y=Estimate,group=factor(gender_F0_M1_a),
+#                           fill=factor(gender_F0_M1_a),
+#                      color=factor(gender_F0_M1_a))) +
+#   
+#     geom_ribbon(aes(ymin = Q5, ymax = Q95,alpha=0.7)) +
+#   
+#     geom_line() +
+#   
+#   geom_jitter(data=Data1,shape=1,size=0.9,width=0.6,aes(group=factor(gender_F0_M1_a),colour=factor(gender_F0_M1_a),
+#                                                         x = rank, y = NW_total)) +
+#   
+#   facet_wrap(~gender_F0_M1_a, ncol = 2, labeller=labeller(gender_F0_M1_a=new))+
+#   
+#   
+#   # scale_color_manual(name=NULL, breaks=c(0,1),values=cols,
+#   #                    labels=c("Predicted (95% CI)","Observed")) +
+#   
+#   scale_color_manual(name = NULL,
+#                      values = cols,
+#                      breaks=c(1,0),
+#                      labels = c("Predicted (95% CI)", "Observed"),
+#                      guide = guide_legend(override.aes = list(linetype = c(1, 0),
+#                                                               shape = c(NA, 1),
+#                                                               color = "grey")))+
+#   
+#   scale_fill_manual(name="", breaks=c(0),values=cols,
+#                       labels=c("Predicted (95% CI)")) +
+#   scale_x_continuous(name="Religious Knowledge",limits=c(0.5,6.5),breaks=c(1.5,3.5,5.5),
+#                      labels=c("","","")) +
+#   scale_y_continuous(name="Total network size",breaks=c(7,8,9,10,11,12,13,14,15),limits=c(7,16),
+#                      labels=c("7","8","9","10",'11','12','13','14','15')) +
+#   
+#   theme_bw() +
+#   theme(plot.title = element_text(hjust = 0.5, size=16,face="bold"),
+#         legend.title = element_text(size=12),
+#         panel.grid.major = element_blank(),
+#         panel.grid.minor = element_blank(),
+#         legend.key.size = unit(0.15, "in"),
+#         legend.text = element_text(size = 12, face = "bold"),
+#           strip.text.x = element_text(
+#             size = 12, color = "black", face = "bold"),
+#           strip.text.y = element_text(
+#             size = 12, color = "black", face = "bold"),
+#         
+#         axis.text.x = element_text(colour="grey20",size=10,angle=0,face="bold"),
+#         axis.text.y = element_text(colour="grey20",size=10,angle=0,hjust=0,vjust=0,face="bold"),  
+#         axis.title.x = element_text(colour="black",size=12,angle=0,hjust=.5,vjust=0,face="bold"),
+#         axis.title.y = element_text(colour="black",size=12,angle=90,hjust=.5,vjust=.5,face="bold"))+
+#  
+#   guides(alpha="none")+
+#   guides(fill="none")
+# plot1
 
 
 library(ggthemes)
@@ -151,7 +152,12 @@ d <- d[complete.cases(d), ]
 Sex_seq <- c(0,1,0,1,0,1)
 Religiosity_seq <- c(-1,-1,0,0,1,1)
 #read in  the model
-M1 <- readRDS("C:/Users/robert/Dropbox/Github/Kin_networks_men/model_intx_both_sexes/NW_total_lognormal_sex.rds")
+
+
+M1 <- readRDS("C:/Users/robert/Dropbox/Github/Religiosity_sex_diffs_and_social_networks/Results/model_intx_both_sexes/NW_total_lognormal_sex.rds")
+
+
+
 attach(d)
 newdata2 <- tidyr::crossing(
   religion=mean(religion),
@@ -195,7 +201,10 @@ library(brms)
 library(modelr)
 library(forcats)
 library(ggdist)
-#0072B2
+# # relabel sex from facet grid
+new <- c("Men", "Women")
+names(new) <- c(1,0)
+
 cols <- c("0" = "#000000", "1" = "#0072B2", "2" = "#000000", "3" = "#0072B2")
 plot1a <- ggplot() +
  
@@ -233,7 +242,7 @@ plot1a <- ggplot() +
   
   scale_x_continuous(name="Relative religiosity",limits=c(-1.3,1.3),breaks=c(-1,0,1),
                      labels=c("Low","Medium","High")) +
-  scale_y_continuous(name="Total network size",breaks=c(7,8,9,10,11,12,13,14,15),limits=c(6,17),
+  scale_y_continuous(name="Total network size",breaks=c(7,8,9,10,11,12,13,14,15),limits=c(6.8,15.2),
                      labels=c("7","8","9","10",'11','12','13','14','15')) +
   
 theme_bw() +
@@ -243,7 +252,7 @@ theme_bw() +
         panel.grid.minor = element_blank(),
         legend.key.size = unit(0.15, "in"),
         
-        strip.text.x = element_blank(),
+        #strip.text.x = element_blank(),
         
         legend.text = element_text(size = 12, face = "bold"),
         axis.text.x = element_text(colour="grey20",size=10,angle=0,face="bold"),
@@ -262,7 +271,7 @@ plot1a
 library("gridExtra")
 library(ggpubr)
 
-m <- ggarrange(plot1, plot1a, 
+m <- ggarrange(plot1a, 
                labels = c("A", "B"),
                ncol = 1, nrow = 2)
 # m1 <-annotate_figure(m,

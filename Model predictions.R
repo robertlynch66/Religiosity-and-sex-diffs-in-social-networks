@@ -2,7 +2,7 @@ library(tidyverse)
 library(brms)
 library(readr)
 
-husbands_new <- read.csv("C:/Users/robert/Dropbox/Github/Intensive extensive kin networks/data/husbands_new.csv", header = T, sep = ",")
+husbands_new <- read.csv("C:/Users/robert/Dropbox/Github/Intensive extensive kin networks/data/husbands_new2.csv", header = T, sep = ",")
 
 husbands_new$percent_rels_in_NW<- as.numeric(husbands_new$percent_rels_in_NW)
 
@@ -22,7 +22,7 @@ data3 <-  husbands_new %>% filter (Respondent_a=="Husband")
 M1 <- readRDS("C:/Users/robert/Dropbox/Github/Kin_networks_men/results/model_intx_both_sexes/NW_total_lognormal_sex.rds")
 
 # percentage relatives in NW
-M1 <- readRDS("C:/Users/robert/Dropbox/Github/Kin_networks_men/results/model_intx_both_sexes/percent_relatives_in_NW_lognormal_sex.rds")
+M1 <- readRDS("C:/Users/robert/Dropbox/Github/Religiosity_sex_diffs_and_social_networks/Results/percent_relatives_in_NW_beta_sex.rds")
 
 # number of relatives in NW
 M1 <- readRDS("C:/Users/robert/Dropbox/Github/Kin_networks_men/results/model_intx_both_sexes/relatives_in_NW_lognormal_sex.rds")
@@ -30,52 +30,56 @@ M1 <- readRDS("C:/Users/robert/Dropbox/Github/Kin_networks_men/results/model_int
 # Number of non-relatives in NW
 M1 <- readRDS("C:/Users/robert/Dropbox/Github/Kin_networks_men/results/model_intx_both_sexes/non_relatives_in_NW_neg_bin_sex.rds")
 
+## relatives providing emotional support
+M1 <- readRDS("C:/Users/robert/Dropbox/Github/Religiosity_sex_diffs_and_social_networks/Results/emotional_support_rels_sex.rds")
+#6.00	4.80	6.90	5.81	5.60	5.90
 
 # familyBariReligiousAfter                     0.49      0.22     0.07     0.92 1.00    10444     8478
 #MI_human_capital                             0.61      0.15     0.31     0.91 1.00     6535     9421
-Sex_seq <- c("female","female","female","female","male","male","male","male")
-religious_seq <- c("low","high","low","high")
+Sex_seq <- c("female","female","female","male","male","male")
+religious_seq <- c("low","med","high","low","med","high")
 wealth <- c("low","high")
 distance <- c("far","far","far","far","near","near","near","near")
 education <- c("educated","uneducated","educated","uneducated","educated","uneducated","educated","uneducated")
 # new df
 attach(data1)
 data <- tidyr::crossing(gender_F0_M1_a = c(0,1),
+                        Age_a=mean(Age_a),
                         Kids_a=mean(Kids_a, na.rm=T),
                         Mothers_kids_a=mean(Mothers_kids_a, na.rm=T),
                         religion = mean(religion,na.rm=T),
-                        familyBariReligiousAfter=mean(familyBariReligiousAfter),
+                        familyBariReligiousAfter=c(-1,0,1),
                         religious_knowledge_scale=mean(religious_knowledge_scale,na.rm=T),
-                        MI_geo_proximity=c(-0.4,0.4),
-                        MI_economic_capital=mean(MI_economic_capital,na.rm=T),
-                        MI_human_capital= mean(MI_human_capital,na.rm=T)) %>%
+                        MI_geo_proximity2=mean(MI_geo_proximity2),
+                        MI_economic_capital2=mean(MI_economic_capital2,na.rm=T),
+                        MI_human_capital2= mean(MI_human_capital2,na.rm=T)) %>%
   as.data.frame()
 
 detach(data1)
 
 summary <- fitted(M1, newdata = data, allow_new_levels=TRUE,probs = c(0.11, 0.89)) %>%
-  as_tibble() %>% bind_cols(wealth)%>% bind_cols(distance) %>% bind_cols(education)
+  as_tibble() %>% bind_cols(Sex_seq)%>% bind_cols(religious_seq) 
 
-names(summary) <- c("estimate","error","5CI","95CI","wealth","distance","education")
+names(summary) <- c("estimate","error","5CI","95CI","sex","religiosity")
 
 summary
 ## geo proximity below
 
 j1 <- summary %>% select (1:4,17,18)
 j1$location <- 1
-names(j1) <- c("estimate","error","5CI","95CI","sex","edu","location")
+names(j1) <- c("estimate","error","5CI","95CI","sex","rel","location")
 
 j2 <- summary %>% select (5:8,17,18)
 j2$location <- 2
-names(j2) <- c("estimate","error","5CI","95CI","sex","edu","location")
+names(j2) <- c("estimate","error","5CI","95CI","sex","rel","location")
 
 j3 <- summary %>% select (9:12,17,18)
 j3$location <- 3
-names(j3) <- c("estimate","error","5CI","95CI","sex","edu","location")
+names(j3) <- c("estimate","error","5CI","95CI","sex","rel","location")
 
 j4 <- summary %>% select (13:16,17,18)
 j4$location <- 4
-names(j4) <- c("estimate","error","5CI","95CI","sex","edu","location")
+names(j4) <- c("estimate","error","5CI","95CI","sex","rel","location")
 
 summary <- rbind(j1,j2,j3,j4)
 
@@ -84,7 +88,7 @@ summary
 
 ### Geographic distances
 # distance from non-relatives
-M1 <- readRDS("C:/Users/robert/Dropbox/Github/Kin_networks_men/results/Geo_distance_non_relatives_ord_cum_sex.rds")
+M1 <- readRDS("C:/Users/robert/Dropbox/Github/Religiosity_sex_diffs_and_social_networks/Results/Geo_distance_non_relatives_ord_cum_sex.rds")
 # distance from relatives
 M1 <- readRDS("C:/Users/robert/Dropbox/Github/Kin_networks_men/results/Geo_distance_relatives_ord_cum_sex.rds")
 
